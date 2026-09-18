@@ -1,0 +1,2213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SollinPlayer | 一站式高品质音乐播放器</title>
+  <meta name="description" content="SollinPlayer 音乐播放器官网：本地与在线一体、逐字歌词、无损音质、云备份与多平台同步。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;family=Righteous&amp;display=swap" rel="stylesheet" />
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="33bf0d13-0b5c-40af-bdd8-d237a3a6db6f"></script>
+  <style>
+    :root {
+      --bg: #050b16;
+      --bg-soft: #0a1327;
+      --panel: rgba(10, 20, 42, 0.82);
+      --line: rgba(120, 214, 255, 0.24);
+      --text: #f2fbff;
+      --muted: #a5bad2;
+      --primary: #00d5ff;
+      --secondary: #ff7b54;
+      --accent: #7dff6f;
+      --cta: #2dff88;
+      --cta-hover: #15ef77;
+      --warning: #ffb347;
+      --glow-primary: rgba(0, 213, 255, 0.34);
+      --glow-cta: rgba(45, 255, 136, 0.42);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --shadow: 0 20px 56px rgba(0, 0, 0, 0.5);
+      --container: 1160px;
+      --spot-x: 50%;
+      --spot-y: 20%;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 12% -8%, rgba(0, 213, 255, 0.52) 0%, rgba(0, 213, 255, 0) 42%),
+        radial-gradient(circle at 100% 0%, rgba(255, 123, 84, 0.46) 0%, rgba(255, 123, 84, 0) 40%),
+        radial-gradient(circle at 50% 120%, rgba(125, 255, 111, 0.22) 0%, rgba(125, 255, 111, 0) 44%),
+        linear-gradient(160deg, #040912 0%, #071022 42%, #040811 100%);
+      color: var(--text);
+      font-family: "Poppins", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overscroll-behavior-y: contain;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      opacity: 0.28;
+      background: repeating-linear-gradient(
+        115deg,
+        rgba(255, 255, 255, 0.08) 0 1px,
+        rgba(255, 255, 255, 0) 1px 78px
+      );
+      mask-image: radial-gradient(circle at center, #000 35%, rgba(0, 0, 0, 0) 88%);
+      animation: meshShift 24s linear infinite;
+    }
+
+    body::after {
+      background: radial-gradient(
+        380px circle at var(--spot-x) var(--spot-y),
+        rgba(0, 213, 255, 0.2),
+        rgba(0, 213, 255, 0) 68%
+      );
+      opacity: 0.72;
+      transition: opacity 180ms ease-out;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      position: relative;
+      overflow-x: clip;
+      isolation: isolate;
+    }
+
+    .shell::before,
+    .shell::after {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 999px;
+      filter: blur(56px);
+      opacity: 0.52;
+    }
+
+    .shell::before {
+      width: min(52vw, 620px);
+      height: min(52vw, 620px);
+      background: radial-gradient(circle at 30% 30%, rgba(0, 213, 255, 0.82), rgba(0, 213, 255, 0));
+      top: 120px;
+      right: -220px;
+      animation: driftA 12s ease-in-out infinite alternate;
+    }
+
+    .shell::after {
+      width: min(40vw, 500px);
+      height: min(40vw, 500px);
+      background: radial-gradient(circle at 65% 40%, rgba(255, 123, 84, 0.72), rgba(255, 123, 84, 0));
+      left: -180px;
+      top: 740px;
+      animation: driftB 14s ease-in-out infinite alternate;
+    }
+
+    .container {
+      width: min(calc(100% - 40px), var(--container));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar-wrap {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      padding-top: 12px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 18px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: linear-gradient(110deg, rgba(8, 16, 34, 0.78), rgba(13, 30, 56, 0.7));
+      backdrop-filter: blur(14px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: linear-gradient(140deg, var(--primary), var(--secondary) 58%, var(--accent));
+      display: grid;
+      place-items: center;
+      font-family: "Righteous", sans-serif;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0 0 26px rgba(0, 213, 255, 0.34);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-links a {
+      position: relative;
+      transition: color 220ms ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus-visible {
+      color: #fff;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 220ms ease;
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a:focus-visible::after {
+      transform: scaleX(1);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      min-height: 44px;
+      min-width: 44px;
+      position: relative;
+      overflow: hidden;
+      transition: background-color 220ms ease, transform 220ms ease, box-shadow 220ms ease, color 220ms ease;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-primary {
+      background: linear-gradient(108deg, var(--cta) 0%, #00d5ff 55%, #ffd166 120%);
+      color: #022516;
+      box-shadow: 0 12px 24px var(--glow-cta), 0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus-visible {
+      background: var(--cta-hover);
+      color: #01190f;
+      transform: translateY(-2px);
+      box-shadow: 0 16px 34px rgba(45, 255, 136, 0.42);
+    }
+
+    .btn-ghost {
+      background: rgba(10, 24, 45, 0.65);
+      color: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .btn-ghost:hover,
+    .btn-ghost:focus-visible {
+      background: rgba(13, 36, 67, 0.88);
+      box-shadow: 0 0 0 1px rgba(0, 213, 255, 0.24) inset;
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: -120%;
+      left: -140%;
+      width: 60%;
+      height: 340%;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+      transform: rotate(22deg);
+      transition: left 450ms ease;
+      pointer-events: none;
+    }
+
+    .btn:hover::after,
+    .btn:focus-visible::after {
+      left: 180%;
+    }
+
+    .hero {
+      padding: 72px 0 56px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 34px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(125, 255, 111, 0.48);
+      color: #d7ffe5;
+      background: linear-gradient(110deg, rgba(45, 255, 136, 0.16), rgba(0, 213, 255, 0.14));
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.16;
+    }
+
+    .hero h1 {
+      margin-top: 16px;
+      font-family: "Righteous", "Poppins", sans-serif;
+      font-size: clamp(40px, 5.4vw, 72px);
+      letter-spacing: 0.01em;
+      max-width: 11ch;
+      background: linear-gradient(96deg, #effdff 2%, #8eefff 38%, #9cffba 64%, #ffd4aa 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 36px rgba(0, 213, 255, 0.22);
+    }
+
+    .lead {
+      margin-top: 18px;
+      max-width: 52ch;
+      color: var(--muted);
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.72;
+    }
+
+    .hero-actions {
+      margin-top: 26px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions .btn-primary {
+      animation: ctaPulse 2.8s ease-in-out infinite;
+    }
+
+    .hero-wave {
+      margin-top: 18px;
+      width: fit-content;
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 213, 255, 0.28);
+      background: rgba(8, 23, 45, 0.62);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+    }
+
+    .hero-wave span {
+      width: 4px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      transform-origin: center bottom;
+      animation: equalizer 1.5s ease-in-out infinite;
+    }
+
+    .hero-wave span:nth-child(1) { height: 8px; animation-delay: 0.08s; }
+    .hero-wave span:nth-child(2) { height: 14px; animation-delay: 0.16s; }
+    .hero-wave span:nth-child(3) { height: 22px; animation-delay: 0.02s; }
+    .hero-wave span:nth-child(4) { height: 10px; animation-delay: 0.23s; }
+    .hero-wave span:nth-child(5) { height: 17px; animation-delay: 0.11s; }
+    .hero-wave span:nth-child(6) { height: 24px; animation-delay: 0.31s; }
+    .hero-wave span:nth-child(7) { height: 13px; animation-delay: 0.19s; }
+    .hero-wave span:nth-child(8) { height: 20px; animation-delay: 0.28s; }
+    .hero-wave span:nth-child(9) { height: 11px; animation-delay: 0.36s; }
+
+    .metrics {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: linear-gradient(160deg, rgba(8, 20, 42, 0.82), rgba(8, 14, 26, 0.72));
+      padding: 14px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .showcase {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 630px;
+    }
+
+    .showcase::before,
+    .showcase::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .showcase::before {
+      width: min(460px, 92vw);
+      aspect-ratio: 1;
+      background: conic-gradient(
+        from 120deg,
+        rgba(0, 213, 255, 0.38),
+        rgba(255, 123, 84, 0.25),
+        rgba(125, 255, 111, 0.34),
+        rgba(0, 213, 255, 0.38)
+      );
+      filter: blur(34px);
+      opacity: 0.95;
+      animation: spinAura 16s linear infinite;
+    }
+
+    .showcase::after {
+      width: min(420px, 84vw);
+      aspect-ratio: 1;
+      border: 1px dashed rgba(141, 239, 255, 0.42);
+      opacity: 0.34;
+      animation: spinAuraReverse 18s linear infinite;
+    }
+
+    .phone {
+      position: relative;
+      width: min(320px, 80vw);
+      aspect-ratio: 9 / 19.5;
+      border-radius: 36px;
+      padding: 12px;
+      background: linear-gradient(160deg, #0f1e37 0%, #060c17 100%);
+      border: 1px solid rgba(174, 235, 255, 0.3);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      z-index: 1;
+      backdrop-filter: blur(6px);
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      width: 34%;
+      height: 14px;
+      border-radius: 999px;
+      background: #03050f;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 1px solid rgba(248, 250, 252, 0.08);
+    }
+
+    .phone::after {
+      content: "";
+      position: absolute;
+      top: -130%;
+      left: -145%;
+      width: 230%;
+      height: 220%;
+      background: linear-gradient(110deg, rgba(255, 255, 255, 0), rgba(186, 249, 255, 0.2), rgba(255, 255, 255, 0));
+      transform: rotate(22deg);
+      animation: phoneShine 4.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .showcase > .phone {
+      animation: floatMain 6.2s ease-in-out infinite;
+    }
+
+    .phone-screen {
+      height: 100%;
+      border-radius: 26px;
+      border: 1px dashed rgba(157, 217, 255, 0.45);
+      background: linear-gradient(180deg, rgba(0, 213, 255, 0.24), rgba(10, 17, 30, 0.94));
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      color: #d8def0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .phone-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: inherit;
+    }
+
+    .phone.phone-media::before,
+    .phone.phone-media::after {
+      display: none;
+    }
+
+    .phone.phone-media .phone-screen {
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      background: #03070f;
+    }
+
+    .phone.phone-media .phone-screen img {
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .phone-secondary {
+      position: absolute;
+      width: min(220px, 54vw);
+      right: -6%;
+      bottom: 6%;
+      transform: rotate(10deg);
+      opacity: 0.95;
+      animation: floatTilt 7.2s ease-in-out infinite;
+    }
+
+    .phone-secondary .phone-screen {
+      background: linear-gradient(180deg, rgba(255, 123, 84, 0.2), rgba(8, 12, 22, 0.92));
+    }
+
+    .section {
+      padding: 72px 0;
+    }
+
+    .section-head {
+      margin-bottom: 22px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2 {
+      font-size: clamp(28px, 3.8vw, 44px);
+      font-family: "Righteous", sans-serif;
+      letter-spacing: 0.01em;
+      background: linear-gradient(96deg, #f5fdff 0%, #85edff 60%, #ffcda6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 58ch;
+      line-height: 1.7;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .feature-card {
+      position: relative;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      padding: 22px;
+      background: linear-gradient(160deg, rgba(9, 21, 42, 0.9), rgba(7, 14, 26, 0.92));
+      transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+      cursor: pointer;
+      min-height: 210px;
+      overflow: hidden;
+    }
+
+    .feature-card:hover,
+    .feature-card:focus-within {
+      transform: translateY(-3px);
+      border-color: rgba(0, 213, 255, 0.52);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 213, 255, 0.2) inset;
+    }
+
+    .feature-card::after {
+      content: "";
+      position: absolute;
+      top: -140%;
+      left: -70%;
+      width: 45%;
+      height: 320%;
+      transform: rotate(24deg);
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(173, 235, 255, 0.24), rgba(255, 255, 255, 0));
+      transition: left 420ms ease;
+      pointer-events: none;
+    }
+
+    .feature-card:hover::after,
+    .feature-card:focus-within::after {
+      left: 148%;
+    }
+
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(0, 213, 255, 0.4), rgba(255, 123, 84, 0.32));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 14px;
+    }
+
+    .feature-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: #fff;
+      stroke-width: 1.8;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .feature-card h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 14px;
+    }
+
+    .showcase-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .shot {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      background: linear-gradient(160deg, rgba(9, 22, 43, 0.78), rgba(8, 14, 27, 0.82));
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
+    }
+
+    .shot h3 {
+      margin: 0;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .shot p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .shot .phone {
+      width: 100%;
+      max-width: 240px;
+      padding: 10px;
+      border-radius: 28px;
+    }
+
+    .shot .phone .phone-screen {
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(160deg, rgba(9, 22, 43, 0.82), rgba(8, 14, 25, 0.84));
+      padding: 22px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel h3 {
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      line-height: 1.64;
+      font-size: 14px;
+    }
+
+    .table {
+      margin-top: 12px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .table th,
+    .table td {
+      border-bottom: 1px solid rgba(148, 211, 252, 0.22);
+      text-align: left;
+      padding: 10px 0;
+      color: var(--muted);
+    }
+
+    .table th {
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      border: 1px solid rgba(45, 255, 136, 0.38);
+      background: linear-gradient(110deg, rgba(45, 255, 136, 0.14), rgba(0, 213, 255, 0.12));
+      color: #d7ffe6;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .faq {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .faq details {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(160deg, rgba(8, 20, 40, 0.82), rgba(8, 12, 21, 0.82));
+      padding: 12px 14px;
+    }
+
+    .faq summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .faq p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.68;
+      font-size: 14px;
+    }
+
+    .download {
+      position: relative;
+      overflow: hidden;
+      margin: 18px 0 72px;
+      border: 1px solid rgba(125, 255, 111, 0.46);
+      border-radius: 28px;
+      padding: 28px;
+      background: linear-gradient(120deg, rgba(8, 25, 49, 0.94), rgba(8, 14, 26, 0.96));
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 22px;
+      align-items: center;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3), 0 0 44px rgba(0, 213, 255, 0.16) inset;
+    }
+
+    .download::before {
+      content: "";
+      position: absolute;
+      inset: -40% -10%;
+      background: radial-gradient(circle at 20% 50%, rgba(0, 213, 255, 0.26), rgba(0, 213, 255, 0) 40%),
+        radial-gradient(circle at 78% 50%, rgba(255, 123, 84, 0.2), rgba(255, 123, 84, 0) 42%);
+      animation: driftC 12s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .download > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .download h2 {
+      font-size: clamp(30px, 3.8vw, 44px);
+      font-family: "Righteous", sans-serif;
+      margin-bottom: 10px;
+    }
+
+    .download p {
+      margin: 0;
+      color: #d6e7ff;
+      line-height: 1.7;
+      max-width: 52ch;
+    }
+
+    .download-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .download .btn {
+      text-align: center;
+      justify-content: center;
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+    }
+
+    .mobile-download-fab {
+      display: none;
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      z-index: 40;
+      border: 0;
+      border-radius: 999px;
+      min-height: 52px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #031b10;
+      background: linear-gradient(108deg, var(--cta) 0%, #00d5ff 55%, #ffd166 120%);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34), 0 10px 24px var(--glow-cta);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .download-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+
+    .download-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .download-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 7, 15, 0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .download-modal__panel {
+      position: relative;
+      width: min(92vw, 720px);
+      border-radius: 26px;
+      border: 1px solid rgba(157, 217, 255, 0.35);
+      background: linear-gradient(160deg, rgba(8, 20, 41, 0.95), rgba(6, 13, 24, 0.96));
+      box-shadow: 0 20px 46px rgba(0, 0, 0, 0.45), 0 0 32px rgba(0, 213, 255, 0.14) inset;
+      padding: 24px;
+      transform: translateY(16px) scale(0.98);
+      transition: transform 240ms ease;
+    }
+
+    .download-modal.is-open .download-modal__panel {
+      transform: translateY(0) scale(1);
+    }
+
+    .download-modal__close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(14, 30, 52, 0.8);
+      color: #fff;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .download-modal__eyebrow {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #8befff;
+      text-transform: uppercase;
+    }
+
+    .download-modal__title {
+      margin: 8px 0 8px;
+      font-size: clamp(26px, 4vw, 34px);
+      font-family: "Righteous", sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    .download-modal__desc {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .download-modal__grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .download-option {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(160deg, rgba(8, 22, 44, 0.88), rgba(7, 13, 24, 0.9));
+      transition: border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .download-option.is-focus {
+      border-color: rgba(45, 255, 136, 0.55);
+      box-shadow: 0 0 0 1px rgba(45, 255, 136, 0.28) inset;
+    }
+
+    .download-option h4 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .download-option p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .download-option__actions {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .download-option__meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .download-option__actions .btn {
+      justify-content: center;
+      display: inline-flex;
+      align-items: center;
+      min-height: 46px;
+      width: 100%;
+      text-align: center;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    footer {
+      color: #9ea6bd;
+      font-size: 13px;
+      padding: 8px 0 36px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @keyframes ctaPulse {
+      0%, 100% {
+        box-shadow: 0 12px 24px var(--glow-cta), 0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+      }
+      50% {
+        box-shadow: 0 18px 36px rgba(45, 255, 136, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.22) inset;
+      }
+    }
+
+    @keyframes equalizer {
+      0%, 100% { transform: scaleY(0.7); opacity: 0.55; }
+      40% { transform: scaleY(1.2); opacity: 1; }
+      70% { transform: scaleY(0.52); opacity: 0.62; }
+    }
+
+    @keyframes meshShift {
+      0% { transform: translate3d(-1.2%, 0, 0); }
+      100% { transform: translate3d(1.2%, 0.8%, 0); }
+    }
+
+    @keyframes driftA {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(-24px, 16px, 0) scale(1.06); }
+    }
+
+    @keyframes driftB {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(22px, -12px, 0) scale(0.95); }
+    }
+
+    @keyframes driftC {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(1.5%, -1.2%, 0); }
+    }
+
+    @keyframes spinAura {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spinAuraReverse {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    @keyframes floatMain {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-9px); }
+    }
+
+    @keyframes floatTilt {
+      0%, 100% { transform: rotate(10deg) translateY(0); }
+      50% { transform: rotate(8deg) translateY(-8px); }
+    }
+
+    @keyframes phoneShine {
+      0%, 100% { left: -145%; }
+      50% { left: 132%; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 420ms ease, transform 420ms ease;
+    }
+
+    .reveal.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--cta);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 1040px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .showcase {
+        min-height: 520px;
+      }
+
+      .feature-grid,
+      .showcase-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .split,
+      .download {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .container {
+        width: min(calc(100% - 24px), var(--container));
+      }
+
+      .topbar-wrap {
+        top: 8px;
+        padding-top: calc(8px + env(safe-area-inset-top));
+      }
+
+      .topbar {
+        padding: 9px 12px;
+        gap: 10px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .topbar .btn {
+        padding-inline: 14px;
+        min-height: 42px;
+      }
+
+      .hero {
+        padding-top: 44px;
+      }
+
+      .hero-wave {
+        margin-top: 14px;
+      }
+
+      .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .metrics,
+      .feature-grid,
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .phone-secondary {
+        display: none;
+      }
+
+      .section {
+        padding: 56px 0;
+      }
+
+      .download {
+        margin-bottom: 58px;
+        padding: 22px 18px;
+      }
+
+      .download-actions {
+        flex-direction: column;
+      }
+
+      .download-actions .btn {
+        width: 100%;
+      }
+
+      .mobile-download-fab {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .download-modal {
+        place-items: end center;
+      }
+
+      .download-modal__panel {
+        width: 100%;
+        max-width: none;
+        border-radius: 24px 24px 0 0;
+        padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+      }
+
+      .download-modal__grid {
+        grid-template-columns: 1fr;
+      }
+
+      footer {
+        padding-bottom: calc(98px + env(safe-area-inset-bottom));
+      }
+    }
+
+    @media (max-width: 460px) {
+      .showcase {
+        min-height: 460px;
+      }
+
+      .phone {
+        width: min(286px, 82vw);
+      }
+
+      .metric strong {
+        font-size: 22px;
+      }
+
+      .download h2 {
+        font-size: clamp(26px, 9vw, 34px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+
+      body::before,
+      body::after,
+      .showcase::before,
+      .showcase::after,
+      .phone::after,
+      .download::before {
+        animation: none !important;
+      }
+
+      .download-modal,
+      .download-modal__panel {
+        transition: none !important;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="container topbar-wrap">
+      <header class="topbar" aria-label="主导航">
+        <a class="brand" href="#top" aria-label="SollinPlayer 首页">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span>SollinPlayer</span>
+        </a>
+        <nav class="nav-links" aria-label="页面导航">
+          <a href="#features">功能亮点</a>
+          <a href="#screens">产品演示</a>
+          <a href="privacy.html">隐私政策</a>
+          <a href="#faq">常见问题</a>
+        </nav>
+        <a class="btn btn-primary" href="#" data-download-open="all" aria-haspopup="dialog" aria-controls="downloadModal">立即下载</a>
+      </header>
+    </div>
+
+    <main id="top" class="container">
+      <section class="hero">
+        <div class="reveal">
+          <span class="eyebrow">iOS / Android / Windows / macOS</span>
+          <h1>把本地与在线音乐，合并成一台播放器。</h1>
+          <p class="lead">
+            SollinPlayer 提供本地音乐库、四大平台在线聚合、逐字歌词、无损音质、云备份与设备同步。
+            从收藏到下载，从歌词到主题，全链路围绕重度听歌体验设计。
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#" data-download-open="all" aria-haspopup="dialog" aria-controls="downloadModal">立即下载</a>
+            <a class="btn btn-ghost" href="#" data-changelog-open="true" aria-haspopup="dialog" aria-controls="changelogModal">查看更新日志</a>
+          </div>
+          <div class="hero-wave" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="metrics" aria-label="关键能力数据">
+            <article class="metric">
+              <strong>10+</strong>
+              <span>主流音频格式支持</span>
+            </article>
+            <article class="metric">
+              <strong>4</strong>
+              <span>在线音乐平台聚合</span>
+            </article>
+            <article class="metric">
+              <strong>14档</strong>
+              <span>歌词字体与行距精调</span>
+            </article>
+          </div>
+        </div>
+
+        <div class="showcase reveal" aria-label="首屏应用界面演示">
+          <article class="phone phone-media" role="img" aria-label="SollinPlayer 首页资料库界面">
+            <div class="phone-screen">
+              <img src="截图/首页资料库.webp" alt="SollinPlayer 首页资料库界面" />
+            </div>
+          </article>
+
+          <article class="phone phone-secondary phone-media" role="img" aria-label="SollinPlayer 在线推荐歌单界面">
+            <div class="phone-screen">
+              <img src="截图/在线推荐歌单.webp" alt="SollinPlayer 在线推荐歌单界面" loading="lazy" decoding="async" />
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="section-head reveal">
+          <h2>功能矩阵</h2>
+          <p>基于《功能大全》梳理，官网重点展示 6 组能力：本地库、播放器、歌词、在线音乐、服务器与云备份，覆盖日常听歌到深度管理场景。</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card reveal" tabindex="0" aria-label="本地音乐库">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 6h10M7 10h7M7 14h10M7 18h7"/></svg>
+            </div>
+            <h3>本地音乐库</h3>
+            <p>自动扫描与手动刷新，支持 MP3 / FLAC / WAV / AAC / OGG / M4A，提供 A-Z 索引、当前歌曲定位、多选批量管理。</p>
+          </article>
+
+          <article class="feature-card reveal" tabindex="0" aria-label="播放器控制">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 6v12l10-6z"/><path d="M4 4v16"/></svg>
+            </div>
+            <h3>播放器控制</h3>
+            <p>顺序/列表循环/单曲循环/随机播放，支持进度拖动、音量滑块、迷你播放器、睡眠定时器和竖屏/横屏歌词布局切换。</p>
+          </article>
+
+          <article class="feature-card reveal" tabindex="0" aria-label="歌词体验">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
+            </div>
+            <h3>歌词体验</h3>
+            <p>支持内嵌 LRC、外挂 LRC、TTML 逐字歌词与双语翻译。歌词进度可按歌曲独立偏移，支持字体、行距、模糊强度细调。</p>
+          </article>
+
+          <article class="feature-card reveal" tabindex="0" aria-label="在线音乐聚合">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+            </div>
+            <h3>在线音乐聚合</h3>
+            <p>支持歌单收藏、外链导入、单曲与批量下载、音质等级与并发策略控制。</p>
+          </article>
+
+          <article class="feature-card reveal" tabindex="0" aria-label="Navidrome 连接">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M8 7h.01M8 17h.01"/></svg>
+            </div>
+            <h3>Navidrome 连接</h3>
+            <p>支持多服务器管理、连通性测试、发现页推荐、歌单/收藏同步，以及服务器歌曲与专辑下载到本地。</p>
+          </article>
+
+          <article class="feature-card reveal" tabindex="0" aria-label="账户与云备份">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 3v6"/><path d="M7 7h10"/><path d="M5 11v7a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-7"/></svg>
+            </div>
+            <h3>账户与云备份</h3>
+            <p>邮箱注册登录、验证码校验、设备绑定与远程解绑。支持喜欢歌曲、歌单与在线收藏的云备份、历史恢复与版本管理。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="screens">
+        <div class="section-head reveal">
+          <h2>产品界面</h2>
+          <p>从播放、歌词到在线榜单，核心场景都围绕高频听歌操作进行优化，保证信息密度和沉浸感并存。</p>
+        </div>
+
+        <div class="showcase-grid">
+          <article class="shot reveal">
+            <h3>播放页 / 动态封面</h3>
+            <p>播放进度、歌词同步与控制区一屏联动。</p>
+            <div class="phone phone-media" role="img" aria-label="播放页与歌词界面">
+              <div class="phone-screen">
+                <img src="截图/播放歌词页面.webp" alt="SollinPlayer 播放页与歌词界面" loading="lazy" decoding="async" />
+              </div>
+            </div>
+          </article>
+
+          <article class="shot reveal">
+            <h3>歌词页 / 逐字高亮</h3>
+            <p>支持逐字歌词、行距字体与延迟校准设置。</p>
+            <div class="phone phone-media" role="img" aria-label="歌词设置界面">
+              <div class="phone-screen">
+                <img src="截图/播放歌词设置.webp" alt="SollinPlayer 歌词设置界面" loading="lazy" decoding="async" />
+              </div>
+            </div>
+          </article>
+
+          <article class="shot reveal">
+            <h3>发现页 / 在线聚合</h3>
+            <p>在线榜单、热歌趋势与多平台内容聚合。</p>
+            <div class="phone phone-media" role="img" aria-label="在线榜单界面">
+              <div class="phone-screen">
+                <img src="截图/在线榜单页面.webp" alt="SollinPlayer 在线榜单界面" loading="lazy" decoding="async" />
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="pro">
+        <div class="section-head reveal">
+          <h2>高阶体验</h2>
+          <p>面向进阶用户，提供更完整的歌词、音色与主题控制能力，让播放器更贴近你的个人听感与使用习惯。</p>
+        </div>
+
+        <div class="split">
+          <article class="panel reveal">
+            <h3>专属能力</h3>
+            <ul class="list">
+              <li>逐字歌词（YRC）卡拉 OK 式高亮</li>
+              <li>TTML Apple Music 风格逐字时间轴</li>
+              <li>自动封面取色 + 自定义 RGB 主题色</li>
+              <li>下载并发 1-3 线程可调</li>
+              <li>LX 音源数量不受限，多设备绑定</li>
+            </ul>
+            <div class="pill-row" aria-label="赞助标签">
+              <span class="pill">歌词进阶</span>
+              <span class="pill">主题定制</span>
+              <span class="pill">高速下载</span>
+              <span class="pill">多设备</span>
+            </div>
+          </article>
+
+          <article class="panel reveal" aria-label="平台支持与系统要求">
+            <h3>平台与系统支持</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>项目</th>
+                  <th>说明</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>移动平台</td>
+                  <td>iOS 12.0+ / Android 6.0+</td>
+                </tr>
+                <tr>
+                  <td>桌面平台</td>
+                  <td>Windows 10+ / macOS 11.0+</td>
+                </tr>
+                <tr>
+                  <td>云服务</td>
+                  <td>账户、设备、备份、恢复</td>
+                </tr>
+                <tr>
+                  <td>服务器连接</td>
+                  <td>Navidrome 多服务器切换</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="faq">
+        <div class="section-head reveal">
+          <h2>常见问题</h2>
+          <p>便于官网首发时快速答疑，减少下载页与社群重复解释成本。</p>
+        </div>
+
+        <div class="faq">
+          <details class="reveal">
+            <summary>这款播放器只支持本地音乐吗？</summary>
+            <p>不是。它同时支持本地库管理与在线平台搜索/下载，也支持连接 Navidrome 私有音乐服务器。</p>
+          </details>
+          <details class="reveal">
+            <summary>歌词可以逐字同步吗？</summary>
+            <p>支持。可读取 LRC、TTML 等格式，并在可用音源条件下展示逐字高亮与双语歌词。</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="download reveal" id="download" aria-label="下载区">
+        <div>
+          <h2>立即开始你的高品质听歌体验</h2>
+          <p>下载 SollinPlayer，在一处完成本地音乐管理、在线聚合搜索、歌词沉浸播放和云端同步。支持 iOS、Android、Windows 与 macOS。</p>
+        </div>
+        <div class="download-actions">
+          <a class="btn btn-primary" href="#" data-download-open="all" aria-label="立即下载" aria-haspopup="dialog" aria-controls="downloadModal">立即下载</a>
+          <a class="btn btn-ghost" href="#" data-changelog-open="true" aria-haspopup="dialog" aria-controls="changelogModal">查看更新日志</a>
+        </div>
+      </section>
+
+      <footer>
+        <span>© <span id="year"></span> SollinPlayer. All rights reserved.</span>
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <a href="privacy.html" style="text-decoration: none; color: inherit; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">隐私政策</a>
+          <span>SollinPlayer 高品质音乐播放器</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <button class="mobile-download-fab" type="button" data-download-open="all" aria-haspopup="dialog" aria-controls="downloadModal">
+    立即下载
+  </button>
+
+  <div class="download-modal" id="downloadModal" aria-hidden="true">
+    <div class="download-modal__backdrop" data-download-close></div>
+    <section class="download-modal__panel" role="dialog" aria-modal="true" aria-labelledby="downloadModalTitle">
+      <button class="download-modal__close" type="button" aria-label="关闭下载弹窗" data-download-close>&times;</button>
+      <p class="download-modal__eyebrow">Download｜手机端 v1.3.9｜PC v1.2.8</p>
+      <h3 class="download-modal__title" id="downloadModalTitle">选择下载渠道</h3>
+      <p class="download-modal__desc">手机端已更新到 v1.3.9，提供小飞机分享页与直链下载；安卓可按设备架构直接选择安装包。</p>
+
+      <div class="download-modal__grid">
+        <article class="download-option" data-platform-card="ios">
+          <h4>iOS</h4>
+          <p>适用于 iPhone / iPad，支持 iOS 13.0 及以上，提供 IPA 自签包。</p>
+          <div class="download-option__actions">
+            <a class="btn btn-primary" href="https://qm.qq.com/cgi-bin/qm/qr?k=7FIeNSUd0PiysEgxZ6OzTrZ402oz-lM-&jump_from=webapi&authKey=+w5s+Ik0/0Y6UNdVJMWoZnAVUD02YmSC1nJVQ+9FWSQk2JZHrAsY64BX3yDgkC/b" target="_blank" rel="noopener noreferrer">小飞机下载</a>
+            <a class="btn btn-ghost" href="https://pan.ymxx.net/f/DwziM/SollinPlayer1.3.8.ipa" target="_blank" rel="noopener noreferrer">IPA 直链</a>
+          </div>
+          <p class="download-option__meta">iOS 安装如需签名，请使用自签工具或个人证书导入 IPA。</p>
+        </article>
+
+        <article class="download-option" data-platform-card="android">
+          <h4>Android</h4>
+          <p>适用于 Android 6.0 及以上系统，提供全架构安装包。</p>
+          <div class="download-option__actions">
+            <a class="btn btn-primary" href="https://qm.qq.com/cgi-bin/qm/qr?k=7FIeNSUd0PiysEgxZ6OzTrZ402oz-lM-&jump_from=webapi&authKey=+w5s+Ik0/0Y6UNdVJMWoZnAVUD02YmSC1nJVQ+9FWSQk2JZHrAsY64BX3yDgkC/b" target="_blank" rel="noopener noreferrer">小飞机下载</a>
+            <a class="btn btn-ghost" href="https://pan.ymxx.net/f/z37hD/SollinPlayer1.3.8_arm64-v8a.apk" target="_blank" rel="noopener noreferrer">ARM64 直链</a>
+            <a class="btn btn-ghost" href="https://pan.ymxx.net/f/ve6IZ/SollinPlayer1.3.8_32bit.apk" target="_blank" rel="noopener noreferrer">32 位直链</a>
+            <a class="btn btn-ghost" href="https://pan.ymxx.net/f/qg1Ck/SollinPlayer1.3.8_x86_64.apk" target="_blank" rel="noopener noreferrer">x86_64 直链</a>
+          </div>
+          <p class="download-option__meta">大部分新机型优先选择 ARM64；老设备可尝试 32 位包，模拟器或特殊设备可使用 x86_64。</p>
+        </article>
+
+        <article class="download-option" data-platform-card="windows">
+          <h4>Windows</h4>
+          <p>适用于 Windows 10 / 11 64位系统。</p>
+          <div class="download-option__actions">
+            <a class="btn btn-primary" href="https://qm.qq.com/cgi-bin/qm/qr?k=7FIeNSUd0PiysEgxZ6OzTrZ402oz-lM-&jump_from=webapi&authKey=+w5s+Ik0/0Y6UNdVJMWoZnAVUD02YmSC1nJVQ+9FWSQk2JZHrAsY64BX3yDgkC/b" target="_blank" rel="noopener noreferrer">主下载链接</a>
+            <a class="btn btn-ghost" href="https://qm.qq.com/cgi-bin/qm/qr?k=7FIeNSUd0PiysEgxZ6OzTrZ402oz-lM-&jump_from=webapi&authKey=+w5s+Ik0/0Y6UNdVJMWoZnAVUD02YmSC1nJVQ+9FWSQk2JZHrAsY64BX3yDgkC/b" target="_blank" rel="noopener noreferrer">备用下载链接</a>
+          </div>
+        </article>
+
+        <article class="download-option" data-platform-card="macos">
+          <h4>macOS</h4>
+          <p>支持 macOS 11.0 及以上。</p>
+          <div class="download-option__actions">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <a class="btn btn-primary" href="https://qm.qq.com/cgi-bin/qm/qr?k=7FIeNSUd0PiysEgxZ6OzTrZ402oz-lM-&jump_from=webapi&authKey=+w5s+Ik0/0Y6UNdVJMWoZnAVUD02YmSC1nJVQ+9FWSQk2JZHrAsY64BX3yDgkC/b" target="_blank" rel="noopener noreferrer" style="padding-inline: 4px; font-size: 13px;">Apple 芯片</a>
+              <a class="btn btn-primary" href="https://qm.qq.com/cgi-bin/qm/qr?k=7FIeNSUd0PiysEgxZ6OzTrZ402oz-lM-&jump_from=webapi&authKey=+w5s+Ik0/0Y6UNdVJMWoZnAVUD02YmSC1nJVQ+9FWSQk2JZHrAsY64BX3yDgkC/b" target="_blank" rel="noopener noreferrer" style="padding-inline: 4px; font-size: 13px;">Intel 芯片</a>
+            </div>
+            <a class="btn btn-ghost" href="https://qm.qq.com/cgi-bin/qm/qr?k=7FIeNSUd0PiysEgxZ6OzTrZ402oz-lM-&jump_from=webapi&authKey=+w5s+Ik0/0Y6UNdVJMWoZnAVUD02YmSC1nJVQ+9FWSQk2JZHrAsY64BX3yDgkC/b" target="_blank" rel="noopener noreferrer">备用下载链接</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <div class="download-modal" id="changelogModal" aria-hidden="true">
+    <div class="download-modal__backdrop" data-changelog-close></div>
+    <section class="download-modal__panel" role="dialog" aria-modal="true" aria-labelledby="changelogModalTitle">
+      <button class="download-modal__close" type="button" aria-label="关闭更新日志" data-changelog-close>&times;</button>
+      <p class="download-modal__eyebrow">Release Notes</p>
+      <h3 class="download-modal__title" id="changelogModalTitle">更新日志</h3>
+      <div class="download-modal__content" style="max-height: 60vh; overflow-y: auto; text-align: left; margin-top: 20px; padding-right: 10px;">
+        
+        <!-- v1.2.8 -->
+        <div style="margin-bottom: 32px;">
+          <h4 style="border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.4em; color: #fff;">v1.2.8</h4>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新功能</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>支持 TTML 歌词渲染，逐字歌词显示能力增强</li>
+            <li>支持自定义歌词颜色与字号，歌词显示更个性化</li>
+            <li>新增迷你模式切换，播放器使用场景更灵活</li>
+            <li>新增本地歌曲标签编辑器，便于管理本地音乐信息</li>
+            <li>完善歌词播放与歌单广场功能，浏览与播放体验更完整</li>
+            <li>新增封面背景主题构建能力，并优化歌词面板背景表现</li>
+            <li>新增下载支持自定义命名规则</li>
+            <li>新增屏蔽规则</li>
+            <li>新增音质徽章展示</li>
+            <li>新增歌单分页加载，减轻渲染压力</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>统一歌单库与备份处理逻辑，数据管理一致性更好</li>
+            <li>精简并修复核心逻辑，整体稳定性与维护性提升</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>修复点击下载后无即时反馈的问题，改为立即提示开始下载</li>
+            <li>修复下载音频错误使用 php 后缀，导致元数据写入失败的问题</li>
+            <li>修复点击任务栏退出无法退出按钮</li>
+            <li>修复播放界面卡顿问题</li>
+          </ul>
+        </div>
+
+        <!-- v1.3.9 -->
+        <div style="margin-bottom: 32px;">
+          <h4 style="border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.4em; color: #fff;">v1.3.9</h4>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新功能</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>播放器：推出全新 AM 高级版播放界面，具备更加细腻的动画且支持 ttml</li>
+            <li>播放界面：新增素雅播放界面</li>
+            <li>播放器视觉：所有播放界面生效全新音质徽章</li>
+            <li>发现页 &amp; 歌单：新增发现详情页样式设置</li>
+            <li>发现页 &amp; 歌单：侧边栏新增歌单快捷入口，支持在界面布局下面自定义显示内容，优化侧边栏操作逻辑</li>
+            <li>发现页 &amp; 歌单：新增歌手搜索，支持 wy、kg、qq</li>
+            <li>下载 &amp; 命名：支持自定义下载文件命名规则，可选字段 + 分隔符排序</li>
+            <li>歌词设置：新增支持修改主句副句罗马音翻译的字号大小</li>
+            <li>其他：新增联系管理员消息功能</li>
+            <li>其他：新增网易云心动模式（小芸主页顶部）</li>
+            <li>其他：新增哔哩哔哩认证支持（实验）</li>
+            <li>其他：navidrome 歌曲列表改成分页加载，滑动更流畅</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">优化</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>播放器：优化播放界面歌词间距与分行逻辑，多项歌词显示和播放器样式修复优化</li>
+            <li>navidrome：优化 navidrome 界面显示，使其更适配横屏</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">修复</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>修复本地 FLAC 解码切歌卡顿问题</li>
+            <li>修复一堆问题</li>
+          </ul>
+        </div>
+
+        <!-- v1.2.5+10000 -->
+        <div style="margin-bottom: 32px;">
+          <h4 style="border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.4em; color: #fff;">v1.2.5（10000）</h4>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>新增歌词、封面等标签匹配（资料库 -> 更多按钮面板）</li>
+            <li>新增批量导入音源文件（支持选择文件夹、多选文件、多个 URL 一行一个导入）</li>
+            <li>新增播放界面屏幕常亮功能（设置 -> 播放设置）</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>优化播放稳定性</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>修复 UI 问题</li>
+            <li>修复 iOS 小组件的 bug</li>
+            <li>修复小云歌单仅显示 500 首的问题</li>
+          </ul>
+        </div>
+
+        <!-- v1.2.0+40 -->
+        <div style="margin-bottom: 32px;">
+          <h4 style="border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.4em; color: #fff;">v1.2.0（40）</h4>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">重磅更新</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>新增 CarPlay 支持（自签可能无权限，需巨魔或参与 TestFlight 测试）</li>
+          </ul>
+          
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>新增实验性新 UI 界面（当前免费开放，后续优化后可能仅对赞助用户开放）</li>
+            <li>新增歌曲无法播放时自动跨平台搜索（默认跨平台固定为酷我）</li>
+            <li>新增播放失败自动切下一曲，不再重复播放当前歌曲</li>
+            <li>全页面支持歌曲多种排序方式，支持自定义排序</li>
+            <li>新增独立搜索功能</li>
+            <li>新增返回顶部功能</li>
+            <li>多个页面添加批量操作按钮</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>修复 Apple Music 样式进度条颜色问题</li>
+            <li>修复手机恢复电脑端数据时喜欢的歌曲无法正常显示的问题</li>
+            <li>移除 TestFlight 版本音源隐藏限制，现在常驻显示</li>
+          </ul>
+
+          <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+          <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+            <li>优化用户卡片显示</li>
+          </ul>
+        </div>
+
+        <!-- v1.1.7 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.7 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>支持字幕逐字显示</li>
+              <li>新增黑胶播放器界面</li>
+              <li>适配TV版本遥控器控制</li>
+              <li>testflight版本固定为1.1.6，后续仅更新构建号，不影响其他版本</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复安卓播放m4a格式无声问题（建议转格式，m4a格式本身兼容性较差）</li>
+              <li>修复在线喜欢的歌曲播放时，通知栏无时间进度的问题</li>
+              <li>修复暂停过久后恢复播放，无法切换下一曲的问题</li>
+              <li>修复一堆bug</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>优化界面UI显示效果</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1.6+33 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.6+33 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增功能</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复已知 Bug</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1.6 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.6 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增逐字打轴功能</li>
+              <li>新增歌曲标签查看编辑功能</li>
+              <li>新增所有播放界面都显示音质</li>
+              <li>新增播放界面音量条开关</li>
+              <li>新增原生适配词幕悬浮歌词</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复安卓播放音乐的音质问题</li>
+              <li>修复无法切歌、循环播放不能完整的问题（部分机型可能未完全修复）</li>
+              <li>修复在线播放时的音质显示</li>
+              <li>修复一堆致命BUG</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1.5 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.5 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增本地音乐资料库「我的喜欢」卡片（可在设置中开启/关闭）</li>
+              <li>新增WebDAV备份功能，支持备份本地以外的全量数据（含在线歌单、网易云Cookie、在线喜欢、LX音源、设置项等）</li>
+              <li>新增自定义是否预加载下一首播放链接的功能（支持高度自定义配置）</li>
+              <li>新增音源不可用自动降级逻辑：音质逐级降级至最低后自动切换音源，切换时触发提示</li>
+              <li>新增历史播放记录功能（本地记录在资料库顶部搜索框左侧，在线记录在在线浏览界面）</li>
+              <li>新增在线播放进度保留功能（重启应用后可直接恢复上次播放进度）</li>
+              <li>新增缓存管理开关：支持关闭整体缓存、单独关闭歌曲播放缓存</li>
+              <li>新增全屏模式（可以隐藏状态栏和底部小白条三大金刚）</li>
+              <li>新增支持导入lx官方的歌单（从lxapp点击导出.lxmc）</li>
+              <li>支持清空播放队列</li>
+              <li>全局常驻菜单栏和迷你播放器</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>优化整体UI显示效果，提升视觉体验</li>
+              <li>优化歌曲移出歌单的操作流程，提升便捷性</li>
+              <li>优化切歌速度，实现无感切换</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复APP自动播放存在的问题</li>
+              <li>修复安卓扫描本地资料库会重复的问题</li>
+              <li>修复网易云二维码登录</li>
+            </ul>
+    
+            <h5 style="color: var(--warning); margin: 16px 0 8px; font-size: 1.1em;">重要提醒</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>下个版本即将下线云备份功能，有数据的记得备份</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1.4 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.4 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增网易云音源点击爱心同步至网易云官方收藏的功能</li>
+              <li>新增支持将网易云个人主页添加到顶部标签页（可手动关闭）</li>
+              <li>新增发现页面自定义排序功能（支持平台排序、标签排序）</li>
+              <li>新增Apple Music样式的TTML歌词识别（支持内嵌式、外挂式TTML歌词）</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复随机播放功能异常的问题</li>
+              <li>修复添加歌曲到“下一首播放”功能失效的问题</li>
+              <li>修复小芸音源封面显示异常的问题</li>
+              <li>修复其他多项已知BUG，提升应用稳定性</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1.2 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.2 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增设置项配置模块，丰富个性化定制能力</li>
+              <li>新增资料库排列方式（支持列表、卡片两种样式切换）</li>
+              <li>新增赞助用户专属播放界面（实验性功能）</li>
+              <li>新增支持自定义头像&昵称</li>
+              <li>新增聚合搜索功能</li>
+              <li>安卓端新增支持将本软件设为本地默认音乐应用（可直接打开文件夹内的音乐文件）</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+               <li>修复更多面板字体显示模糊、看不清的问题</li>
+               <li>修复酷狗歌单仅能加载30首歌曲的限制问题</li>
+               <li>修复歌单导入数量存在上限的问题</li>
+               <li>修复自建歌单缺少“移出歌单”选项的问题</li>
+               <li>修复网易云每日推荐页面无返回按钮的问题</li>
+               <li>修复随机播放功能异常的问题</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>无（本次更新以功能新增和问题修复为主）</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1.1 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.1 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增网易云音乐Cookie登录功能，支持查看自建歌单、每日推荐等个性化内容</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+               <li>修复添加歌曲到“下一首播放”功能异常的问题</li>
+               <li>修复随机播放模式下第一首歌始终为列表首曲的问题</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>重新设计「发现」页面，优化视觉布局与交互体验</li>
+              <li>移除「浏览」菜单，将其功能合并至「资料库」模块，简化导航层级</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.1.0 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.1.0 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>彻彻底底重构在线页面并更名为「发现」</li>
+              <li>新增启动软件自动播放音乐功能</li>
+              <li>新增启动软件自动同步导入的外部歌单功能</li>
+              <li>新增在线搜索预测词展示</li>
+              <li>新增MV搜索与播放功能</li>
+              <li>新增歌单广场模块</li>
+              <li>新增iOS通知栏灵动岛歌词显示</li>
+              <li>新增安卓悬浮歌词功能</li>
+              <li>新增适配魅族状态栏歌词显示</li>
+              <li>新增下载歌曲时将所有元数据（歌词、歌手、歌名、专辑）内嵌到歌曲文件</li>
+              <li>新增自选是否下载外挂歌词/封面的开关</li>
+              <li>新增已下载歌曲标识（卡片右上角绿色丝带），降低重复下载率</li>
+              <li>新增后端网关服务器更换功能</li>
+              <li>新增安装状态栏导航栏沉浸</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+               <li>修复点击随机播放后歌曲信息混乱的问题</li>
+               <li>修复在线播放时刷新资料库打断播放的问题</li>
+               <li>修复外部歌单无法全量导入的问题</li>
+               <li>修复本地添加歌单面板无法滑动的问题</li>
+               <li>修复部分手机通知栏暂停后无法继续播放的问题</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>优化大部分UI显示效果，提升视觉体验</li>
+              <li>优化Apple Music样式逐字歌词特效</li>
+              <li>焕新应用图标视觉设计</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.0.5 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.0.5 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增Apple Music风格播放器界面(部分参考了同类优秀软件CyreneMusic)</li>
+              <li>新增播放界面状态持久化功能（从播放界面返回后再次进入，保留上次退出时的界面状态）</li>
+              <li>新增歌曲歌词前奏脉冲进度条</li>
+              <li>新增歌词底部控件自动隐藏开关</li>
+              <li>下载管理模块新增多项管理功能</li>
+              <li>本地资料库新增三种排序方式</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复部分功能延迟加载的问题</li>
+              <li>修复无法准确定位正在播放歌曲位置的问题</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>优化歌词滚动动画效果</li>
+              <li>优化一键反馈BUG的流程，提升反馈便捷性</li>
+              <li>优化软件图标视觉效果</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.0.4 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.0.4 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增定位到正在播放歌曲的功能</li>
+              <li>新增批量操作的全选按钮</li>
+              <li>持久化在线搜索的平台选择（避免重启后重置）</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复本地歌曲数量较多时扫描速度过慢的问题</li>
+              <li>优化歌词获取速度（提升约30倍）</li>
+              <li>修复酷我音乐部分歌曲无法播放的问题</li>
+              <li>修复酷我音乐歌词加载/显示异常的问题</li>
+              <li>修复逐字歌词多行渲染错乱的问题</li>
+              <li>修复搜索歌单/专辑时，更换关键词后仅重新搜索单一类型（歌单/专辑）的问题</li>
+              <li>修复歌词相关状态无法持久化的问题（翻译、逐字、罗马音设置重启后丢失）</li>
+              <li>修复在线下载音质选择无法持久化的问题（重启APP后恢复为默认24bit）</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>无（本次更新以问题修复和功能新增为主）</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.0.3 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.0.3 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>安卓平台新增自定义下载目录、自定义扫描目录、扫描歌曲时长限制功能</li>
+              <li>新增悬浮式迷你播放器样式，支持长按移动位置</li>
+              <li>新增收藏歌曲、自建歌单内部排序功能</li>
+              <li>新增快速收藏歌曲按钮</li>
+              <li>滑动歌词支持修改歌曲进度</li>
+              <li>歌曲下载元数据内嵌到歌曲文件（解决部分APP无法识别外挂元数据的问题）</li>
+              <li>在线歌单内部添加搜索框</li>
+              <li>点击批量收藏支持选择歌单/喜欢</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复歌单内播放全部需要开启增强的问题</li>
+              <li>修复软件使用过程中卡顿发热的问题</li>
+              <li>修复音质选择重启APP后恢复默认的问题</li>
+              <li>修复在线歌单随机播放/循环播放异常的问题</li>
+              <li>修复歌词翻译、罗马音设置无法持久化保存的问题</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>平台切换按钮调整为居中显示</li>
+              <li>迷你播放器和底部菜单模糊效果支持关闭（默认关闭）</li>
+              <li>优化部分UI按钮的布局显示</li>
+              <li>删除部分专辑图片显示，降低图片渲染压力</li>
+              <li>优化从歌曲列表听歌的加载速度，实现秒点秒播</li>
+              <li>优化逐字歌词显示时的抖动问题</li>
+              <li>优化部分UI显示效果</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.0.2 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.0.2 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">修复项</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复QQ音乐在后台不会自动切换下一首的问题</li>
+              <li>修复搜索结果的批量喜欢和下载按钮超出屏幕显示范围的问题</li>
+              <li>修复歌单详情页无批量操作按钮的问题</li>
+              <li>修复底部菜单栏配置后重启APP延迟生效的问题</li>
+              <li>修复iOS灵动岛点击无法进入APP的问题</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">优化项</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>音质检测逻辑优化：改为串行执行并增加1秒延时（规避并发限制）</li>
+              <li>音源检测逻辑优化：改为串行检测</li>
+              <li>优化自动播放降级策略</li>
+            </ul>
+
+            <h5 style="color: var(--primary); margin: 16px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>新增直接导入音频文件到播放器文件列表的功能</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- v1.0.1 -->
+        <details>
+          <summary style="cursor: pointer; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1.2em; font-weight: 600; color: var(--muted);">v1.0.1 更新记录</summary>
+          <div style="padding-top: 8px;">
+            <h5 style="color: var(--primary); margin: 12px 0 8px; font-size: 1.1em;">新增功能</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>导入的音源支持滑动操作</li>
+              <li>歌单内部显示迷你播放器</li>
+              <li>底部菜单支持自定义（隐藏/排序）</li>
+              <li>新增酷狗排行榜、推荐歌单</li>
+              <li>新增QQ音乐搜索热搜词展示</li>
+              <li>QQ音乐、网易云支持逐字歌词（如有）、罗马音（如有）、翻译（如有）</li>
+              <li>酷狗音乐支持歌词显示、逐字歌词（如有）</li>
+              <li>逐字歌词、罗马音、翻译功能下放至非赞助用户</li>
+              <li>新增洛雪音源检测功能（支持批量检测，批量功能需赞助用户）</li>
+              <li>歌词界面5秒无操作自动切换至全屏歌词</li>
+              <li>新增应用内更新功能（安卓可直接更新；iOS需下载后保存至文件并签名）</li>
+              <li>新增QQ音乐、网易云、酷狗音乐的歌曲评论展示</li>
+            </ul>
+            
+            <h5 style="color: var(--primary); margin: 24px 0 12px; font-size: 1.1em;">问题修复</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>修复导入的歌单在通知栏不显示时长的问题</li>
+              <li>修复导入的歌单更多按钮点击后仅显示移除歌单的问题</li>
+              <li>修复酷狗音乐后台播放时可能无法切换下一首的问题</li>
+              <li>修复部分lx源不可用的问题</li>
+              <li>修复部分播放错误的问题</li>
+            </ul>
+    
+            <h5 style="color: var(--primary); margin: 24px 0 12px; font-size: 1.1em;">体验优化</h5>
+            <ul style="padding-left: 20px; margin: 0; line-height: 1.6; color: var(--muted); list-style-type: disc;">
+              <li>优化模糊歌词解析逻辑</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    const observers = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 }
+    );
+
+    observers.forEach((node) => io.observe(node));
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!prefersReducedMotion) {
+      const root = document.documentElement;
+      const moveSpotlight = (event) => {
+        const x = (event.clientX / window.innerWidth) * 100;
+        const y = (event.clientY / window.innerHeight) * 100;
+        root.style.setProperty("--spot-x", `${x.toFixed(2)}%`);
+        root.style.setProperty("--spot-y", `${y.toFixed(2)}%`);
+      };
+      window.addEventListener("pointermove", moveSpotlight, { passive: true });
+    }
+
+    const downloadModal = document.getElementById("downloadModal");
+    const downloadOpeners = document.querySelectorAll("[data-download-open]");
+    const downloadClosers = document.querySelectorAll("[data-download-close]");
+    const platformCards = downloadModal ? downloadModal.querySelectorAll("[data-platform-card]") : [];
+    let modalLastActive = null;
+
+    const setModalPlatformFocus = (platform) => {
+      platformCards.forEach((card) => {
+        const active = platform !== "all" && card.dataset.platformCard === platform;
+        card.classList.toggle("is-focus", active);
+      });
+
+      if (platform === "all" || !downloadModal) return;
+      const activeCard = downloadModal.querySelector(`[data-platform-card="${platform}"]`);
+      if (!activeCard) return;
+      activeCard.scrollIntoView({ block: "nearest", behavior: prefersReducedMotion ? "auto" : "smooth" });
+    };
+
+    const openDownloadModal = (platform = "all", trigger = null) => {
+      if (!downloadModal) return;
+      modalLastActive = trigger || document.activeElement;
+      setModalPlatformFocus(platform);
+      downloadModal.classList.add("is-open");
+      downloadModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      const closeBtn = downloadModal.querySelector(".download-modal__close");
+      if (closeBtn) closeBtn.focus({ preventScroll: true });
+      if (navigator.vibrate) navigator.vibrate(10);
+    };
+
+    const closeDownloadModal = () => {
+      if (!downloadModal) return;
+      downloadModal.classList.remove("is-open");
+      downloadModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      platformCards.forEach((card) => card.classList.remove("is-focus"));
+      if (modalLastActive && typeof modalLastActive.focus === "function") {
+        modalLastActive.focus({ preventScroll: true });
+      }
+    };
+
+    downloadOpeners.forEach((opener) => {
+      opener.addEventListener("click", (event) => {
+        event.preventDefault();
+        openDownloadModal(opener.dataset.downloadOpen || "all", opener);
+      });
+    });
+
+    downloadClosers.forEach((closer) => {
+      closer.addEventListener("click", closeDownloadModal);
+    });
+
+    // Changelog Modal Logic
+    const changelogModal = document.getElementById("changelogModal");
+    const changelogOpeners = document.querySelectorAll("[data-changelog-open]");
+    const changelogClosers = document.querySelectorAll("[data-changelog-close]");
+
+    const openChangelogModal = (trigger = null) => {
+      if (!changelogModal) return;
+      modalLastActive = trigger || document.activeElement;
+      changelogModal.classList.add("is-open");
+      changelogModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      const closeBtn = changelogModal.querySelector(".download-modal__close");
+      if (closeBtn) closeBtn.focus({ preventScroll: true });
+      if (navigator.vibrate) navigator.vibrate(10);
+    };
+
+    const closeChangelogModal = () => {
+      if (!changelogModal) return;
+      changelogModal.classList.remove("is-open");
+      changelogModal.setAttribute("aria-hidden", "true");
+      // Only remove body class if downloadModal is also closed (simple check)
+      if (!downloadModal || !downloadModal.classList.contains("is-open")) {
+        document.body.classList.remove("modal-open");
+      }
+      if (modalLastActive && typeof modalLastActive.focus === "function") {
+        modalLastActive.focus({ preventScroll: true });
+      }
+    };
+
+    changelogOpeners.forEach((opener) => {
+      opener.addEventListener("click", (event) => {
+        event.preventDefault();
+        openChangelogModal(opener);
+      });
+    });
+
+    changelogClosers.forEach((closer) => {
+      closer.addEventListener("click", closeChangelogModal);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (downloadModal && downloadModal.classList.contains("is-open")) closeDownloadModal();
+        if (changelogModal && changelogModal.classList.contains("is-open")) closeChangelogModal();
+      }
+    });
+  </script>
+</body>
+</html>
